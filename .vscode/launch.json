@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "HelloFX",
+      "request": "launch",
+      "mainClass": "HelloFX",
+      "projectName": "quiz_app_project_d4bd22ec"
+    },
+    {
+      "type": "java",
+      "name": "MainApp",
+      "request": "launch",
+      "mainClass": "main.MainApp",
+      "projectName": "quiz_app_project_d4bd22ec"
+    },
+    {
+      "type": "java",
+      "name": "Debug JavaFX App",
+      "request": "launch",
+      "mainClass": "Main",
+      "vmArgs": "--module-path \"C:/javafx-sdk-17/lib\" --add-modules javafx.controls,javafx.fxml"
+    }
+    
+  ]
+}

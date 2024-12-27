@@ -2,6 +2,7 @@ package model;
 
 import util.QuizObserver;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class QuizManager {
@@ -42,10 +43,18 @@ public class QuizManager {
             observer.update(currentScore);
         }
     }
+    
 
     public void loadQuestions(String category, String difficulty) {
         QuestionFactory factory = QuestionFactoryProvider.getFactory(category);
         currentQuestions = factory.generateQuestions(difficulty);
+
+        // Soruları rastgele karıştır
+        Collections.shuffle(currentQuestions);
+
+        // Gösterilecek maksimum soru sayısını sınırla (örneğin, 10 soru)
+        int maxQuestions = Math.min(3, currentQuestions.size());
+        currentQuestions = currentQuestions.subList(0, maxQuestions);
     }
 
     public List<Question> getQuestions() {

@@ -1,68 +1,9 @@
-// package controller;
-
-// import model.Question;
-// import model.QuizManager;
-// import model.HintDecorator;
-
-// import java.util.List;
-// //import java.util.stream.Collectors;
-
-// public class QuizController {
-//     private QuizManager quizManager;
-//     private List<Question> filteredQuestions;
-//     private int currentQuestionIndex;
-
-//     public QuizController(String category, String difficulty) {
-//         quizManager = QuizManager.getInstance();
-//         // İki parametreli çağrı
-//         quizManager.loadQuestions(category, difficulty);
-
-//         // Soruları doğrudan al, filtreleme gerekmez
-//         filteredQuestions = quizManager.getQuestions();
-
-//         currentQuestionIndex = 0;
-//     }
-
-//     public Question getNextQuestion() {
-//         if (currentQuestionIndex < filteredQuestions.size()) {
-//             return filteredQuestions.get(currentQuestionIndex++);
-//         }
-//         return null; // Sorular bittiğinde null döndür
-//     }
-
-//     public Question getNextQuestionWithHint(String hint) {
-//         Question question = getNextQuestion();
-//         if (question != null) {
-//             return new HintDecorator(question, hint);
-//         }
-//         return null;
-//     }
-
-//     public int getQuizScore() {
-//         return quizManager.getScore();
-//     }
-
-//     public void submitAnswer(String answer, String correctAnswer) {
-//         if (answer.equals(correctAnswer)) {
-//             quizManager.updateScore(10); // Sabit bir puan eklenebilir ya da stratejiye göre değiştirilebilir
-//         }
-//     }
-// }
-
-
-
 package controller;
 
-import model.Question;
-import model.QuizManager;
-import model.HintDecorator;
-import util.DifficultyStrategy;
-import util.EasyStrategy;
-import util.MediumStrategy;
-import util.HardStrategy;
+import util.*;
+import model.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class QuizController {
     private QuizManager quizManager;
@@ -71,30 +12,36 @@ public class QuizController {
 
     public QuizController(String category, String difficulty) {
         quizManager = QuizManager.getInstance();
-        // İki parametreli çağrı
         quizManager.loadQuestions(category, difficulty);
-
-        // Soruları doğrudan al, filtreleme gerekmez
         filteredQuestions = quizManager.getQuestions();
-
         currentQuestionIndex = 0;
+
+        // HintManager'ın ipucu kullanımını sıfırlaması
+        HintManager.getInstance().resetHint();
     }
+
     public QuizManager getQuizManager() {
         return quizManager;
     }
-    
 
     public Question getNextQuestion() {
         if (currentQuestionIndex < filteredQuestions.size()) {
             return filteredQuestions.get(currentQuestionIndex++);
         }
-        return null; // Sorular bittiğinde null döndür
+        return null;
     }
 
     public Question getNextQuestionWithHint(String hint) {
-        Question question = getNextQuestion();
-        if (question != null) {
-            return new HintDecorator(question, hint);
+        HintManager hintManager = HintManager.getInstance();
+
+        if (hintManager.isHintUsed()) {
+            throw new IllegalStateException("Hint can only be used once per game.");
+        }
+
+        if (currentQuestionIndex > 0) {
+            Question current = filteredQuestions.get(currentQuestionIndex - 1);
+            hintManager.useHint(); // Hint kullanıldığını işaretle
+            return new HintDecorator(current, hint);
         }
         return null;
     }
@@ -120,14 +67,24 @@ public class QuizController {
         }
 
         int baseScore = answer.equals(question.getCorrectAnswer()) ? 10 : 0;
+        if (HintManager.getInstance().isHintUsed()) {
+            baseScore /= 2; // Hint kullanıldıysa puanı yarıya düşür
+        }
+
         quizManager.updateScore(strategy.calculateScore(baseScore));
     }
 
-    // Overloaded submitAnswer to match current usage
-    public void submitAnswer(String answer, String correctAnswer) {
-        if (currentQuestionIndex > 0) {
-            Question question = filteredQuestions.get(currentQuestionIndex - 1);
-            submitAnswer(answer, question);
-        }
+    public Question useHint(String hint) {
+    HintManager hintManager = HintManager.getInstance();
+    if (hintManager.isHintUsed()) {
+        throw new IllegalStateException("Hint can only be used once per game.");
     }
+    if (currentQuestionIndex > 0) {
+        Question current = filteredQuestions.get(currentQuestionIndex - 1);
+        hintManager.useHint();
+        return new HintDecorator(current, hint); // HintDecorator döndürülür
+    }
+    throw new IllegalStateException("No question available to provide a hint.");
+}
+    
 }

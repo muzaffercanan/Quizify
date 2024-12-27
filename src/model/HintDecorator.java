@@ -10,7 +10,7 @@ public class HintDecorator extends QuestionDecorator {
 
     @Override
     public String getQuestionText() {
-        return super.getQuestionText() + "\nHint: " + hint;
+        return super.getQuestionText() + "\nHint: " + hint; // İpucunu ekrana göster
     }
 
     public String getHint() {

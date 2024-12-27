@@ -1,19 +1,21 @@
 {
   "version": "0.2.0",
   "configurations": [
+    
+
+    {
+      "type": "java",
+      "name": "WelcomeView",
+      "request": "launch",
+      "mainClass": "view.WelcomeView",
+      "projectName": "Quizify_83b2d1db"
+    },
     {
       "type": "java",
       "name": "MainApp",
       "request": "launch",
       "mainClass": "main.MainApp",
       "projectName": "Quizify_83b2d1db"
-    },
-    {
-      "type": "java",
-      "name": "HelloFX",
-      "request": "launch",
-      "mainClass": "HelloFX",
-      "projectName": "quiz_app_project_d4bd22ec"
     },
     {
       "type": "java",

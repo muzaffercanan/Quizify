@@ -1,111 +1,158 @@
 package view;
 
 import controller.QuizController;
-import model.Question;
+import model.*;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import util.QuizObserver;
 
-public class QuizView extends Application implements QuizObserver {
+public class QuizView extends Application {
     private QuizController controller;
     private VBox questionLayout;
     private Label questionLabel;
     private ToggleGroup optionsGroup;
     private Button submitButton;
     private Label feedbackLabel;
+    private Label scoreLabel;
+    private TimerDecorator timerDecorator; // TimerDecorator sınıf düzeyinde tanımlandı
+
     private Question currentQuestion;
     private String selectedCategory;
     private String selectedDifficulty;
+    private String userName;
 
-    public QuizView(String category, String difficulty) {
+    public QuizView(String category, String difficulty, String userName) {
         this.selectedCategory = category;
         this.selectedDifficulty = difficulty;
+        this.userName = userName;
     }
 
     @Override
     public void start(Stage primaryStage) {
         controller = new QuizController(selectedCategory, selectedDifficulty);
 
-        // QuizManager'a bu View'i Observer olarak ekle
-        controller.getQuizManager().addObserver(this);
+        VBox mainLayout = new VBox(20);
+        mainLayout.setAlignment(Pos.TOP_CENTER);
+        mainLayout.setStyle("-fx-padding: 10; -fx-background-color: linear-gradient(to bottom, #f0f8ff, #87cefa);");
 
-        HBox mainLayout = new HBox();
-        mainLayout.setStyle("-fx-background-color: #f4f4f4;");
+        Label userInfoLabel = new Label("Player: " + userName + " | Category: " + selectedCategory + " | Difficulty: " + selectedDifficulty);
+        userInfoLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
-        VBox imageColumn = new VBox();
-        imageColumn.setStyle(
-                "-fx-background-image: url('/resources/quizPhoto2.jpg'); " +
-                        "-fx-background-size: 100% 100%; " +
-                        "-fx-background-position: center; " +
-                        "-fx-background-repeat: no-repeat;");
-        imageColumn.setPrefWidth(400);
-        HBox.setHgrow(imageColumn, Priority.NEVER);
-
-        questionLayout = new VBox(20);
-        questionLayout.setAlignment(Pos.CENTER);
-        questionLayout.setStyle("-fx-padding: 20; -fx-background-color: #ffffff;");
+        scoreLabel = new Label("Current Score: 0");
+        scoreLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #34495e;");
 
         questionLabel = new Label();
-        questionLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #333;");
+        questionLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
         optionsGroup = new ToggleGroup();
 
         submitButton = new Button("Submit");
         submitButton.setStyle(
-                "-fx-font-size: 16px; " +
-                        "-fx-background-color: #4CAF50; " +
-                        "-fx-text-fill: white; " +
-                        "-fx-padding: 10px 20px; " +
-                        "-fx-border-radius: 5px; " +
-                        "-fx-background-radius: 5px;");
-
+                "-fx-font-size: 16px; -fx-background-color: #28a745; " +
+                        "-fx-text-fill: white; -fx-padding: 10 20; " +
+                        "-fx-border-radius: 10; -fx-background-radius: 10;"
+        );
         submitButton.setOnAction(e -> handleSubmission());
 
         feedbackLabel = new Label();
-        feedbackLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #555;");
+        feedbackLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #555;");
 
-        questionLayout.getChildren().addAll(questionLabel, submitButton, feedbackLabel);
+        questionLayout = new VBox(20);
+        questionLayout.setAlignment(Pos.CENTER);
+
+        mainLayout.getChildren().addAll(userInfoLabel, scoreLabel, questionLayout, feedbackLabel, submitButton);
+
+        Scene scene = new Scene(mainLayout, 800, 600);
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Quiz - Welcome " + userName);
+        primaryStage.show();
 
         loadNextQuestion();
-
-        HBox.setHgrow(questionLayout, Priority.ALWAYS);
-        mainLayout.getChildren().addAll(imageColumn, questionLayout);
-
-        Scene scene = new Scene(mainLayout, 800, 400);
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("Quiz Application");
-        primaryStage.show();
     }
 
     private void loadNextQuestion() {
-        questionLayout.getChildren().removeIf(node -> node instanceof RadioButton);
+        HintManager.getInstance().resetHint();
+
+        if (timerDecorator != null) {
+            timerDecorator.stopTimer(); // Mevcut zamanlayıcıyı durdur
+        }
+
+        questionLayout.getChildren().clear();
         feedbackLabel.setText("");
 
-        String hint = "Think about the basics!"; // Örnek ipucu
-        currentQuestion = controller.getNextQuestionWithHint(hint);
+        currentQuestion = controller.getNextQuestion();
 
         if (currentQuestion != null) {
+            Label timerLabel = new Label("Time Remaining: 10 seconds");
+            timerLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: red;");
+
+            timerDecorator = new TimerDecorator(currentQuestion, 10);
+            timerDecorator.startTimer(timerLabel, () -> {
+                feedbackLabel.setText("Time's up! Moving to next question...");
+                feedbackLabel.setStyle("-fx-text-fill: red;");
+                loadNextQuestion();
+            });
+
             questionLabel.setText(currentQuestion.getQuestionText());
+            questionLayout.getChildren().add(questionLabel);
+
+            Button hintButton = new Button("Show Hint");
+            hintButton.setStyle(
+                    "-fx-font-size: 14px; -fx-background-color: #3498db; " +
+                            "-fx-text-fill: white; -fx-padding: 5 10; " +
+                            "-fx-border-radius: 5; -fx-background-radius: 5;"
+            );
+
+            hintButton.setOnAction(e -> {
+                try {
+                    HintManager hintManager = HintManager.getInstance();
+                    if (!hintManager.isHintUsed()) {
+                        currentQuestion = controller.getNextQuestionWithHint("Think about the basics!");
+                        feedbackLabel.setText("Hint: " + ((HintDecorator) currentQuestion).getHint());
+                        feedbackLabel.setStyle("-fx-text-fill: blue;");
+                        hintManager.useHint();
+                    } else {
+                        currentQuestion = controller.getNextQuestionWithHint("!");
+                        feedbackLabel.setText("Hint already used!");
+                        feedbackLabel.setStyle("-fx-text-fill: red;");
+                    }
+                    hintButton.setDisable(true); // Hint butonunu devre dışı bırak
+                    hintButton.setText("Hint already used!"); // Buton mesajını güncelle
+                } catch (IllegalStateException ex) {
+                    feedbackLabel.setText(ex.getMessage());
+                    feedbackLabel.setStyle("-fx-text-fill: red;");
+                }
+            });
+
+            questionLayout.getChildren().add(hintButton);
 
             for (String option : currentQuestion.getOptions()) {
                 RadioButton rb = new RadioButton(option);
                 rb.setToggleGroup(optionsGroup);
-                rb.setStyle("-fx-font-size: 14px; -fx-text-fill: #333;");
-                questionLayout.getChildren().add(questionLayout.getChildren().size() - 2, rb);
+                rb.setStyle("-fx-font-size: 16px; -fx-text-fill: #34495e;");
+                questionLayout.getChildren().add(rb);
             }
+
+            questionLayout.getChildren().addAll(timerLabel, feedbackLabel);
         } else {
-            questionLabel.setText("Quiz Complete! Your score: " + controller.getQuizScore());
-            submitButton.setDisable(true);
+            FinishView finishView = new FinishView(userName, selectedCategory, selectedDifficulty, controller.getQuizScore());
+            try {
+                finishView.start((Stage) questionLayout.getScene().getWindow());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
     private void handleSubmission() {
-        RadioButton selected = (RadioButton) optionsGroup.getSelectedToggle();
+        if (timerDecorator != null) {
+            timerDecorator.stopTimer();
+        }
 
+        RadioButton selected = (RadioButton) optionsGroup.getSelectedToggle();
         if (selected == null) {
             feedbackLabel.setText("Please select an option!");
             return;
@@ -117,15 +164,13 @@ public class QuizView extends Application implements QuizObserver {
             feedbackLabel.setStyle("-fx-text-fill: green;");
         } else {
             feedbackLabel.setText("Incorrect! Correct answer: " + currentQuestion.getCorrectAnswer());
+            feedbackLabel.setStyle("-fx-text-fill: red;");
         }
 
-        controller.submitAnswer(selectedAnswer, currentQuestion.getCorrectAnswer());
+        controller.submitAnswer(selectedAnswer, currentQuestion);
+        scoreLabel.setText("Current Score: " + controller.getQuizManager().getScore());
         loadNextQuestion();
     }
 
-    @Override
-    public void update(int newScore) {
-        // Kullanıcı puanını güncelle
-        feedbackLabel.setText("Current Score: " + newScore);
-    }
+    
 }

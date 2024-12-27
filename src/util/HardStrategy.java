@@ -1,4 +1,3 @@
-
 package util;
 
 public class HardStrategy implements DifficultyStrategy {

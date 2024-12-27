@@ -14,7 +14,6 @@ public class QuestionFactoryProxy implements QuestionFactory {
     @Override
     public List<Question> generateQuestions(String difficulty) {
         if (realFactory == null) {
-            // Gerçek factory yalnızca gerektiğinde oluşturulur
             realFactory = QuestionFactoryProvider.getFactory(category);
         }
         return realFactory.generateQuestions(difficulty);

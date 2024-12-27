@@ -6,9 +6,11 @@ public class QuizManager {
     private static QuizManager instance;
     private List<Question> currentQuestions;
     private int currentScore;
+    private int currentQuestionIndex;
 
     private QuizManager() {
         currentScore = 0;
+        currentQuestionIndex = 0;
     }
 
     public static QuizManager getInstance() {
@@ -19,7 +21,23 @@ public class QuizManager {
     }
 
     public void loadQuestions(String category, String difficulty) {
-        currentQuestions = QuestionFactory.generateQuestions(category, difficulty);
+        QuestionFactory factory = QuestionFactoryProvider.getFactory(category);
+        currentQuestions = factory.generateQuestions(difficulty);
+    }
+
+    public Question getNextQuestion() {
+        if (currentQuestionIndex < currentQuestions.size()) {
+            return currentQuestions.get(currentQuestionIndex++);
+        }
+        return null;
+    }
+
+    public Question getNextQuestionWithHint(String hint) {
+        Question question = getNextQuestion();
+        if (question != null) {
+            return new HintDecorator(question, hint);
+        }
+        return null;
     }
 
     public List<Question> getQuestions() {

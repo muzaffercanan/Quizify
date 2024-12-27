@@ -2,9 +2,10 @@ package controller;
 
 import model.Question;
 import model.QuizManager;
+import model.HintDecorator;
 
 import java.util.List;
-import java.util.stream.Collectors;
+//import java.util.stream.Collectors;
 
 public class QuizController {
     private QuizManager quizManager;
@@ -27,6 +28,14 @@ public class QuizController {
             return filteredQuestions.get(currentQuestionIndex++);
         }
         return null; // Sorular bittiğinde null döndür
+    }
+
+    public Question getNextQuestionWithHint(String hint) {
+        Question question = getNextQuestion();
+        if (question != null) {
+            return new HintDecorator(question, hint);
+        }
+        return null;
     }
 
     public int getQuizScore() {

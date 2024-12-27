@@ -18,7 +18,6 @@ public class CategorySelectionView extends Application {
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-padding: 30; -fx-background-color: linear-gradient(to bottom, #ffffff, #87cefa);");
 
-        // Animasyonlu hoş geldiniz mesajı
         Label welcomeLabel = new Label();
         welcomeLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
         animateWelcomeMessage(welcomeLabel, "Welcome to the QUIZIFY!");

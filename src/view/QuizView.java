@@ -8,8 +8,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import util.QuizObserver;
 
-public class QuizView extends Application {
+public class QuizView extends Application implements QuizObserver {
     private QuizController controller;
     private VBox questionLayout;
     private Label questionLabel;
@@ -20,7 +21,6 @@ public class QuizView extends Application {
     private String selectedCategory;
     private String selectedDifficulty;
 
-    // Yeni Constructor (Kategori ve Zorluk ile birlikte)
     public QuizView(String category, String difficulty) {
         this.selectedCategory = category;
         this.selectedDifficulty = difficulty;
@@ -29,6 +29,9 @@ public class QuizView extends Application {
     @Override
     public void start(Stage primaryStage) {
         controller = new QuizController(selectedCategory, selectedDifficulty);
+
+        // QuizManager'a bu View'i Observer olarak ekle
+        controller.getQuizManager().addObserver(this);
 
         HBox mainLayout = new HBox();
         mainLayout.setStyle("-fx-background-color: #f4f4f4;");
@@ -118,5 +121,11 @@ public class QuizView extends Application {
 
         controller.submitAnswer(selectedAnswer, currentQuestion.getCorrectAnswer());
         loadNextQuestion();
+    }
+
+    @Override
+    public void update(int newScore) {
+        // Kullanıcı puanını güncelle
+        feedbackLabel.setText("Current Score: " + newScore);
     }
 }

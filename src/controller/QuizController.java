@@ -79,6 +79,10 @@ public class QuizController {
 
         currentQuestionIndex = 0;
     }
+    public QuizManager getQuizManager() {
+        return quizManager;
+    }
+    
 
     public Question getNextQuestion() {
         if (currentQuestionIndex < filteredQuestions.size()) {

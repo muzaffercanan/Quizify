@@ -1,4 +1,3 @@
-
 package model;
 
 import java.util.List;
@@ -8,7 +7,9 @@ public class QuizManager {
     private List<Question> currentQuestions;
     private int currentScore;
 
-    private QuizManager() { currentScore = 0; }
+    private QuizManager() {
+        currentScore = 0;
+    }
 
     public static QuizManager getInstance() {
         if (instance == null) {
@@ -21,9 +22,15 @@ public class QuizManager {
         currentQuestions = QuestionFactory.generateQuestions(category, difficulty);
     }
 
-    public List<Question> getQuestions() { return currentQuestions; }
-    public int getScore() { return currentScore; }
-    public void updateScore(int points) { currentScore += points; }
+    public List<Question> getQuestions() {
+        return currentQuestions;
+    }
 
-    
+    public int getScore() {
+        return currentScore;
+    }
+
+    public void updateScore(int points) {
+        currentScore += points;
+    }
 }

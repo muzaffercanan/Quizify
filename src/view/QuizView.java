@@ -161,15 +161,17 @@ public class QuizView extends Application {
     private Label feedbackLabel;
     private Question currentQuestion;
     private String selectedCategory;
+    private String selectedDifficulty;
 
-    // Yeni Constructor (Kategori ile birlikte)
-    public QuizView(String category) {
+    // Yeni Constructor (Kategori ve Zorluk ile birlikte)
+    public QuizView(String category, String difficulty) {
         this.selectedCategory = category;
+        this.selectedDifficulty = difficulty;
     }
 
     @Override
     public void start(Stage primaryStage) {
-        controller = new QuizController(selectedCategory, "Easy");
+        controller = new QuizController(selectedCategory, selectedDifficulty);
 
         HBox mainLayout = new HBox();
         mainLayout.setStyle("-fx-background-color: #f4f4f4;");
